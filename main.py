@@ -1,67 +1,78 @@
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from functions.solved_count import get_today_solved_diff
 from functions.top100 import load_top100_set, get_tier_from_db
 from datetime import datetime
 import os
 import sqlite3
 
-def clean_handle(raw_input):
-    return raw_input.replace("solved_count_log_", "").replace(".txt", "").strip()
+app = FastAPI()
 
-def print_newly_solved_top100(handle, today):
-    db_path = f"top100_{handle}_{today}.db"
-    if not os.path.exists(db_path):
-        print(f"[⚠️] 오늘자 Top100 DB가 존재하지 않습니다: {db_path}")
-        return
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    solved_log_path = f"solved_count_log_{handle}.txt"
-    if not os.path.exists(solved_log_path):
-        print(f"[⚠️] 로그 파일이 없습니다: {solved_log_path}")
-        return
+# 정적 파일 서빙
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-    # 오늘 푼 문제 목록이 로그에 없으므로, top100 DB 전체에서 오늘 푼 것으로 추정되는 문제를 비교
-    top100_set = load_top100_set(handle, today)
+# HTML 서빙
+@app.get("/")
+def serve_index():
+    return FileResponse("templates/luxtrail_index.html")
 
-    # 이전 날짜 top100 로드 (어제 날짜 기준)
-    from datetime import timedelta
-    yest = (datetime.strptime(today, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
-    prev_db_path = f"top100_{handle}_{yest}.db"
-    prev_set = set()
-    if os.path.exists(prev_db_path):
-        prev_set = load_top100_set(handle, yest)
-
-    newly_solved = top100_set - prev_set
-    if not newly_solved:
-        print("오늘 새롭게 푼 Top100 문제는 없습니다.")
-        return
-
-    print("오늘 새롭게 푼 Top100 문제 목록:")
-    for pid in sorted(newly_solved):
-        tier = get_tier_from_db(db_path, pid)
-        print(f" - 문제 번호 {pid}, 티어: {tier}")
-
-def main():
-    print("=== 백준 스트릭 기록기 + Top100 비교 ===")
-    raw = input("백준 ID를 입력하세요: ")
-    handle = clean_handle(raw)
+# 오늘 푼 문제 수 API
+@app.get("/api/solved-diff/{handle}")
+def solved_diff(handle: str):
     today = datetime.now().strftime("%Y-%m-%d")
-    
-    log_path = f"solved_count_log_{handle}.txt"
-    
-    if not os.path.exists(log_path):
-        print(f"로그 파일이 존재하지 않아 새로 만듭니다: {log_path}")
-    
-    try:
-        diff, today_count = get_today_solved_diff(handle, today)
-        print(f"\n[{handle}] 오늘 푼 문제 수: {today_count}개")
-        if diff > 0:
-            print(f"{diff}문제 풀었다!")
-        else:
-            print("얼른 문제 푸세요!")
+    diff, today_count = get_today_solved_diff(handle, today)
+    return {"today_count": today_count, "diff_from_yesterday": diff}
 
-        print_newly_solved_top100(handle, today)
+# 특정 문제 Top100 포함 여부
+@app.get("/api/top100/check")
+def check_problem_in_top100(problem_id: int):
+    today = datetime.now().strftime("%Y-%m-%d")
+    found_handles = []
 
-    except Exception as e:
-        print(f"[ERROR] 처리 중 문제가 발생했습니다: {e}")
+    for filename in os.listdir():
+        if filename.startswith("top100_") and filename.endswith(f"{today}.db"):
+            parts = filename.split("_")
+            if len(parts) >= 2:
+                handle = parts[1]
+                problem_set = load_top100_set(handle, today)
+                if problem_id in problem_set:
+                    found_handles.append({"handle": handle})
 
-if __name__ == "__main__":
-    main()
+    return found_handles
+
+# 오늘의 랭킹
+@app.get("/api/ranking/today")
+def today_tier_ranking():
+    today = datetime.now().strftime("%Y-%m-%d")
+    rankings = []
+
+    for filename in os.listdir():
+        if filename.startswith("top100_") and filename.endswith(f"{today}.db"):
+            handle = filename.split("_")[1]
+            db_path = filename
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT problem_id FROM top100_problems")
+            problems = [row[0] for row in cursor.fetchall()]
+            conn.close()
+
+            total_score = 0
+            for pid in problems:
+                tier = get_tier_from_db(db_path, pid)
+                total_score += tier if tier else 0
+
+            rankings.append({"handle": handle, "tier_score": total_score})
+
+    rankings.sort(key=lambda x: x["tier_score"], reverse=True)
+    return rankings

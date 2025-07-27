@@ -47,11 +47,14 @@ def append_today_count(handle, date, count):
 
 # 어제와 오늘 푼 문제 수 차이를 return
 def get_today_solved_diff(handle, today):
-    file_path = f"solved_count_log_{handle}.txt"
     today_count = fetch_solved_count(handle)
     prev_count = read_yesterday_count(handle, today)
     append_today_count(handle, today, today_count)
 
+    print("어제 값:", prev_count)
+    print("오늘 값:", today_count)
+    print("차이:", today_count - (prev_count if prev_count is not None else 0))
+    
     if prev_count is not None:
         return today_count - prev_count, today_count
     # 이전 기록이 없는 경우
