@@ -1,5 +1,5 @@
 from functions.solved_count import get_today_solved_diff
-from functions.top100 import load_top100_set, get_tier_from_db
+from functions.top100_db import load_top100_set, get_tier_from_db
 from datetime import datetime
 import os
 import sqlite3

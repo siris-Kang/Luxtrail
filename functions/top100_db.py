@@ -1,9 +1,13 @@
+import os
 import sqlite3
 import requests
 
+
 # DB 초기화
 def init_db(handle, date):
-    conn = sqlite3.connect(f"top100_{handle}_{date}.db")
+    base_path = os.path.dirname(__file__)
+    db_path = os.path.join(base_path, '..', 'DBs', f'top100_{handle}_{date}.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS top100_problems (
@@ -18,6 +22,7 @@ def init_db(handle, date):
     conn.close()
     print("DB 초기화 완료")
 
+
 # 오늘을 기준으로 Top 100의 전체 문제 가져오기
 def get_today_problems(handle):
     url = f"https://solved.ac/api/v3/user/top_100?handle={handle}"
@@ -31,6 +36,7 @@ def get_today_problems(handle):
         print(f"[ERROR] {handle}의 Top 100 가져오기 실패")
     return problem_ids
 
+
 # 문제별 티어 점수 가져오기
 def get_problem_tier(problem_id):
     url = f"https://solved.ac/api/v3/problem/show?problemId={problem_id}"
@@ -39,12 +45,15 @@ def get_problem_tier(problem_id):
         return res.json().get("level", 0)
     return 0
 
+
 # DB에 저장
 def save_top100(handle, date):
-    init_db(date)
+    init_db(handle, date)
     problem_ids = get_today_problems(handle)
 
-    conn = sqlite3.connect(f"top100_{handle}_{date}.db")
+    base_path = os.path.dirname(__file__)
+    db_path = os.path.join(base_path, '..', 'DBs', f'top100_{handle}_{date}.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     for pid in problem_ids:
@@ -57,15 +66,43 @@ def save_top100(handle, date):
     conn.close()
     print(f"[OK] {handle}의 Top 100 저장 완료")
 
-# DB에 저장된 Top 100 읽어오는 함수
-def load_top100_set(handle, date):
-    db_path = f"top100_{handle}_{date}.db"
+
+# DB에 저장된 Top 100의 문제 번호 읽어오기
+def load_top100_problem(handle, date):
+    base_path = os.path.dirname(__file__)
+    db_path = os.path.join(base_path, '..', 'DBs', f'top100_{handle}_{date}.db')
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
+
     cursor.execute("SELECT problem_id FROM top100_problems")
     problems = [row[0] for row in cursor.fetchall()]
     conn.close()
     return set(problems)
+
+
+# DB에 저장된 Top 100의 문제 번호와 티어 함께 읽어오기
+def load_top100_problem_tier(handle, date):
+    base_path = os.path.dirname(__file__)
+    db_path = os.path.join(base_path, '..', 'DBs', f'top100_{handle}_{date}.db')
+
+    if not os.path.exists(db_path):
+        return {}
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT problem_id, tier FROM top100_problems")
+        problems = cursor.fetchall()
+    except sqlite3.OperationalError as e:
+        print(f"[WARN] {handle} {date} DB에 테이블이 없거나 손상됨: {e}")
+        problems = []
+    finally:
+        conn.close()
+
+    return {pid: tier for pid, tier in problems}
+
+
 
 # DB에 저장된 Top 100에서 특정 문제 tier만 읽어오기
 def get_tier_from_db(db_path, problem_id):
@@ -75,3 +112,17 @@ def get_tier_from_db(db_path, problem_id):
     row = cursor.fetchone()
     conn.close()
     return row[0] if row else None
+
+
+# 오늘 새로 추가된 문제들의 티어 합 반환하기
+def get_today_new_problem_score(handle, today_str, yesterday_str):
+    today_dict = load_top100_problem_tier(handle, today_str)
+    yesterday_dict = load_top100_problem_tier(handle, yesterday_str)
+
+    # 어제 기록이 없으면 점수 계산 안 함
+    if not yesterday_dict:
+        return 0
+
+    new_problem_ids = set(today_dict.keys()) - set(yesterday_dict.keys())
+    total_score = sum(today_dict[pid] for pid in new_problem_ids if today_dict[pid])
+    return total_score

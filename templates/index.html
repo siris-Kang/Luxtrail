@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luxtrail</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="/static/luxtrail_style.css">
+</head>
+<body>
+    <div class="container">
+
+        <!-- 계정입력 -->
+        <div class="card">
+            <h2>User Input</h2>
+            <input type="text" class="handleInput" placeholder="백준 ID 입력">
+            <button onclick="pushNewUser()">계정 추가</button>
+
+            <!-- 오늘의 스트릭 -->
+            <h2>Streak Today</h2>
+            <button onclick="getStreak()">새로고침</button>
+            <div class="result streakResult"></div>
+        </div>
+
+        <!-- 오늘 특정 문제를 풀었는지 여부 -->
+        <div class="card">
+            <h2>문제 검색</h2>
+            <div>문제가 Top 100 이내여야만 측정 가능합니다.</div>
+            <input type="text" class="problemIdInput" placeholder="문제 번호 입력 (예: 1000)">
+            <button onclick="checkProblemInTop100()">Top100 분석</button>
+            <div class="result top100Result"></div>
+        </div>
+
+        <!-- 당일 랭킹 -->
+        <div class="card">
+            <h2>오늘의 랭킹</h2>
+            <button onclick="loadRanking()">당일 랭킹 보기</button>
+            <ul class="rankingList"></ul>
+        </div>
+    </div>
+
+    <script src="/static/luxtrail_script.js"></script>
+</body>
+</body>
+</html>

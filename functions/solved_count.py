@@ -1,17 +1,19 @@
 import requests
 from datetime import datetime
 
+
 # 지금까지 푼 문제 수 가져오기
-def fetch_solved_count(handle):
+def get_solved_count(handle):
     url = f"https://solved.ac/api/v3/user/show?handle={handle}"
     res = requests.get(url)
     if res.status_code == 200:
         return res.json().get("solvedCount", 0)
     return 0
 
+
 # 어제 날짜 기준으로 마지막 푼 문제 수를 return
 def read_yesterday_count(handle, today):
-    file_path = f"solved_count_log_{handle}.txt"
+    file_path = f"logs/solved_count_log_{handle}.txt"
     try:
         with open(file_path, "r") as f:
             lines = f.readlines()
@@ -26,9 +28,10 @@ def read_yesterday_count(handle, today):
     except FileNotFoundError:
         return None
 
+
 # 오늘 기준으로 푼 문제 수 업데이트
 def append_today_count(handle, date, count):
-    file_path = f"solved_count_log_{handle}.txt"
+    file_path = f"logs/solved_count_log_{handle}.txt"
     try:
         with open(file_path, "r") as f:
             lines = f.readlines()
@@ -45,9 +48,10 @@ def append_today_count(handle, date, count):
         with open(file_path, "w") as f:
             f.write(f"{date}: {count}\n")
 
+
 # 어제와 오늘 푼 문제 수 차이를 return
 def get_today_solved_diff(handle, today):
-    today_count = fetch_solved_count(handle)
+    today_count = get_solved_count(handle)
     prev_count = read_yesterday_count(handle, today)
     append_today_count(handle, today, today_count)
 
@@ -59,4 +63,3 @@ def get_today_solved_diff(handle, today):
         return today_count - prev_count, today_count
     # 이전 기록이 없는 경우
     return 0, today_count
-
