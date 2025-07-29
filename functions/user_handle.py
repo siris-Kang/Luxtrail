@@ -10,13 +10,11 @@ DB_DIR = "DBs"
 def ensure_directories():
     if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
-        print(f"[OK] 로그 디렉토리 생성됨: {LOG_DIR}")
     else:
         print(f"[SKIP] 로그 디렉토리 이미 존재: {LOG_DIR}")
 
     if not os.path.exists(DB_DIR):
         os.makedirs(DB_DIR)
-        print(f"[OK] DB 디렉토리 생성됨: {DB_DIR}")
     else:
         print(f"[SKIP] DB 디렉토리 이미 존재: {DB_DIR}")
 

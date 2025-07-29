@@ -6,7 +6,6 @@ async function pushNewUser() {
         alert("백준 ID를 입력해주세요.");
         return;
     }
-
     try {
     const res = await axios.post(`${BACKEND_URL}/api/user/register`, 
         { handle: handle },
@@ -27,10 +26,28 @@ async function getStreak() {
 
     data.forEach(entry => {
         const p = document.createElement("p");
-        p.innerText = `${entry.handle}: 오늘 ${entry.diff_from_yesterday}문제를 풀었습니다!`;
+        p.classList.add("streakCard");
+
+        const idSpan = document.createElement("span");
+        idSpan.className = "userId";
+        idSpan.innerText = entry.handle;
+
+        const countSpan = document.createElement("span");
+        countSpan.className = "count";
+
+        if (entry.diff_from_yesterday === 0) {
+            countSpan.innerText = "얼른 문제 푸세요!!";
+            countSpan.style.color = "red";
+        } else {
+            countSpan.innerText = `오늘 ${entry.diff_from_yesterday}문제`;
+        }
+
+        p.appendChild(idSpan);
+        p.appendChild(countSpan);
         resultDiv.appendChild(p);
     });
 }
+
 
 
 async function checkProblemInTop100() {
@@ -55,7 +72,7 @@ async function loadRanking() {
 
     const ul = document.querySelector('.rankingList');
     if (!ul) {
-        console.error("❌ .rankingList 요소 없음!");
+        console.error("rankingList 요소 없음");
         return;
     }
 
@@ -63,7 +80,10 @@ async function loadRanking() {
     console.log(data);
     data.forEach((entry, idx) => {
         const li = document.createElement('li');
-        li.innerText = `#${idx + 1} ${entry.handle} - ${entry.tier_score} 티어점수`;
+        li.innerHTML = `
+            <span>${idx + 1}   ${entry.handle}</span>
+            <span>${entry.tier_score}  점</span>
+        `;
         ul.appendChild(li);
     });
 }

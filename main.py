@@ -46,7 +46,6 @@ def register_user(req: UserRegisterRequest):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=result_msg
             )
-
         return {"message": result_msg}
 
     except Exception as e:
@@ -89,14 +88,12 @@ def check_problem_in_top100(problem_id: int):
     today = datetime.now().strftime("%Y-%m-%d")
     found_handles = []
 
-    for filename in os.listdir():
-        if filename.startswith("top100_") and filename.endswith(f"{today}.db"):
-            parts = filename.split("_")
-            if len(parts) >= 2:
-                handle = parts[1]
-                problem_set = load_top100_problem(handle, today)
-                if problem_id in problem_set:
-                    found_handles.append({"handle": handle})
+    for handle in get_user_list():
+        # 오늘자 top100 DB에서 문제 번호들 불러오기
+        problem_ids = load_top100_problem(handle, today)
+
+        if problem_id in problem_ids:
+            found_handles.append({"handle": handle})
 
     return found_handles
 
@@ -109,16 +106,15 @@ def today_tier_ranking():
     valid_users = set(get_user_list())
     rankings = []
 
-    DB_DIR = "DBs"
-    for filename in os.listdir(DB_DIR):
-        if filename.startswith("top100_") and filename.endswith(f"{today}.db"):
-            handle = filename.split("_")[1]
+    for handle in valid_users:
+        try:
+            save_top100(handle, today)
+        except Exception as e:
+            print(f"{handle} 데이터 저장 실패:", e)
+            continue
 
-            if handle not in valid_users:
-                continue  # 유효하지 않은 유저 → 스킵
-
-            score = get_today_new_problem_score(handle, today, yesterday)
-            rankings.append({"handle": handle, "tier_score": score})
+        score = get_today_new_problem_score(handle, today, yesterday)
+        rankings.append({"handle": handle, "tier_score": score})
 
     rankings.sort(key=lambda x: x["tier_score"], reverse=True)
     return rankings
