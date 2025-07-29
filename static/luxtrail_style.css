@@ -25,11 +25,6 @@ body {
     transition: all 0.25s ease-in-out;
 }
 
-.card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-}
-
 h2 {
     font-size: 22px;
     margin-bottom: 15px;
@@ -60,6 +55,47 @@ button {
 
 button:hover {
     background-color: #dfa100;
+}
+
+.warningRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.warningBox {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 2px solid #ffeeba;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    flex-grow: 1;
+}
+
+.tinyWarningBtn {
+    font-size: 11px;
+    padding: 6px 10px;
+    height: auto;
+    background-color: #f4b400;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    
+    flex-shrink: 0;
+    flex-grow: 0;
+    width: auto;
+}
+
+
+.tinyWarningBtn:hover {
+    background-color: #df5900;
 }
 
 .result, .top100Result {
@@ -104,11 +140,6 @@ button:hover {
     color: #111;
     box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     transition: transform 0.2s ease;
-}
-
-.streakCard:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.08);
 }
 
 .streakCard .userId {

@@ -17,6 +17,15 @@ async function pushNewUser() {
 }
 
 
+async function saveYesterday() {
+    try {
+        await axios.post(`${BACKEND_URL}/api/save-yesterday`);
+    } catch (e) {
+        console.error("어제자 저장 실패", e);
+    }
+}
+
+
 async function getStreak() {
     const res = await axios.get(`/api/solved-diff/all`);
     const data = res.data;
@@ -61,7 +70,7 @@ async function checkProblemInTop100() {
     return;
     }
 
-    resultDiv.innerHTML = '<b>Top100 문제로 푼 사람:</b><ul>' + 
+    resultDiv.innerHTML = '<b>Top100에 해당 문제가 있는 사람:</b><ul>' + 
     data.map(user => `<li>${user.handle}</li>`).join('') + '</ul>';
 }
 

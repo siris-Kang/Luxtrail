@@ -53,6 +53,20 @@ def register_user(req: UserRegisterRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"서버 내부 오류: {str(e)}"
         )
+    
+@app.post("/api/save-yesterday")
+def save_yesterday_data():
+    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+
+    for handle in get_user_list():
+        try:
+            save_top100(handle, yesterday)
+            count = get_solved_count(handle)
+            append_today_count(handle, yesterday, count)
+        except:
+            pass
+
+    return {"message": "OK"}
 
 
 # 오늘의 스트릭
