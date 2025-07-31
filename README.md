@@ -73,13 +73,15 @@ VSCode Terminal에서 가상환경을 실행할 경우 **[Error] Activate.ps1 �
  ① **관리자 권한**으로 PowerShell을 열고 다음 명령어 실행:  
 ```bash
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
-Y```
+Y < 누르기 
+```
  * RemoteSigned: 로컬에서 만든 스크립트는 실행 가능, 인터넷에서 받은 스크립트는 서명 필요  
  * Scope Process: 현재 PowerShell 세션에서만 유효  
 
 ② 가상환경 다시 활성화  
 ```bash
-.\luxtrail\Scripts\Activate.ps1```
+.\luxtrail\Scripts\Activate.ps1
+```
 
 ③(luxtrail)가 앞에 뜨면 완료  
 (luxtrail) PS C:\Users\사용자\Documents\Github\Luxtrail> 
