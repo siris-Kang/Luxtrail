@@ -1,4 +1,4 @@
-## LuxTrail
+## 💫LuxTrail
 
 Check friends' streaks on Baekjoon  
 using Solved.ac API(Unofficial)
