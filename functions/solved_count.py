@@ -49,6 +49,32 @@ def append_today_count(handle, date, count):
             f.write(f"{date}: {count}\n")
 
 
+def append_yesterday_count(handle, target_date_str, count):
+    file_path = f"logs/solved_count_log_{handle}.txt"
+    try:
+        with open(file_path, "r") as f:
+            lines = f.readlines()
+
+        found = False
+        for i, line in enumerate(lines):
+            if line.startswith(f"{target_date_str}:"):
+                lines[i] = f"{target_date_str}: {count}\n"
+                found = True
+                break
+
+        if not found:
+            # 해당 날짜가 없으면 맨 끝에 추가
+            lines.append(f"{target_date_str}: {count}\n")
+
+        with open(file_path, "w") as f:
+            f.writelines(lines)
+
+    except FileNotFoundError:
+        with open(file_path, "w") as f:
+            f.write(f"{target_date_str}: {count}\n")
+
+
+
 # 어제와 오늘 푼 문제 수 차이를 return
 def get_today_solved_diff(handle, today):
     today_count = get_solved_count(handle)

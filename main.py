@@ -9,7 +9,7 @@ import sqlite3
 from pydantic import BaseModel
 from fastapi import status
 
-from functions.solved_count import get_today_solved_diff
+from functions.solved_count import get_today_solved_diff, append_yesterday_count, get_solved_count
 from functions.top100_db import load_top100_problem, save_top100, get_today_new_problem_score
 from functions.user_handle import register_new_user, get_user_list, ensure_directories, check_today_status
 
@@ -53,7 +53,9 @@ def register_user(req: UserRegisterRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"서버 내부 오류: {str(e)}"
         )
-    
+
+
+# 어제자 이름으로 DB/log 저장
 @app.post("/api/save-yesterday")
 def save_yesterday_data():
     yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -62,7 +64,7 @@ def save_yesterday_data():
         try:
             save_top100(handle, yesterday)
             count = get_solved_count(handle)
-            append_today_count(handle, yesterday, count)
+            append_yesterday_count(handle, yesterday, count)
         except:
             pass
 
