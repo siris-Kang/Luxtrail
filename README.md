@@ -68,6 +68,7 @@ pip install -r requirements.txt
 ```
 
 ⚠️ python 가상환경 생성은 필수가 아니다.  
+<br>
 VSCode Terminal에서 가상환경을 실행할 경우 **[Error] Activate.ps1 파일을 로드할 수 없습니다**가 날 수 있다.   
 이는 PowerShell의 스크립트 실행 정책 때문이며, 다음의 방법으로 PowerShell 실행 정책을 일시적으로 완화시킬 수 있다.  
  ① **관리자 권한**으로 PowerShell을 열고 다음 명령어 실행:  
