@@ -84,7 +84,9 @@ Y < 누르기
 ```
 
 ③(luxtrail)가 앞에 뜨면 완료  
-(luxtrail) PS C:\Users\사용자\Documents\Github\Luxtrail> 
+```bash
+(luxtrail) PS C:\Users\사용자\Documents\Github\Luxtrail>
+```
   
 <br>
 
